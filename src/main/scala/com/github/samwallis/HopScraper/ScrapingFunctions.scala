@@ -109,7 +109,6 @@ object ScrapingFunctions {
     val innnerDoc = Jsoup.parse(cdata_string)
     val offers: Elements = innnerDoc.body().select("div[itemprop=offers]")
     val price: String = offers.select("span[itemprop='price']").text()
-    println("testiiiing")
     val cartform: Elements = innnerDoc.body().select("#cartform")
     val availability: String =
       if (cartform.select("button[id=add-to-cart-button]").hasText()) "In Stock"
