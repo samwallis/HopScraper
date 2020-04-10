@@ -13,27 +13,46 @@ class OutputWriter(hops: Array[Hop]) extends SparkSessionWrapper {
     hopSchema
   )
 
-  val parsedHops = allHopsDF
-    .filter($"Parsed" === lit("parsed"))
-    .orderBy($"Price".asc_nulls_last)
-  val unparsedHops = allHopsDF
-    .filter($"Parsed" =!= lit("parsed"))
-    .orderBy($"Product".asc_nulls_last)
 
-  def write(path: String): Unit = {
-    println("Writing to: " + path)
-    parsedHops.write
-      .format("com.crealytics.spark.excel")
-      .option("dataAddress", "'Hop Prices'!A1")
-      .option("useHeader", "true")
-      .mode("overwrite")
-      .save(path + "hop_comparison.xlsx")
-    unparsedHops.write
-      .format("com.crealytics.spark.excel")
-      .option("dataAddress", "'Unparsed Hops'!A1")
-      .option("useHeader", "true")
-      .mode("append")
-      .save(path + "hop_comparison.xlsx")
-    println("Success!")
+  def write(path: String, filename : String, format: String): Unit = {
+    if (format == "parquet") {
+      println("Writing to: " + path + filename)
+      allHopsDF.write.mode("append").parquet(path+filename)
+      println("Success!")
+    } else if (format == "xlsx") {
+      println("Writing to: " + path + filename + ".xlsx")
+      val parsedHopsAvailabvle = allHopsDF
+        .filter($"Parsed" === lit("parsed") && $"Availability" === lit("In Stock"))
+        .orderBy($"Price".asc_nulls_last)
+      val parsedHopsUnavailabvle = allHopsDF
+        .filter($"Parsed" === lit("parsed") && $"Availability" === lit("Out of Stock"))
+        .orderBy($"Price".asc_nulls_last)
+      val unparsedHops = allHopsDF
+        .filter($"Parsed" =!= lit("parsed"))
+        .orderBy($"Product".asc_nulls_last)
+      parsedHopsAvailabvle.write
+        .format("com.crealytics.spark.excel")
+        .option("dataAddress", "'Available Hop Prices'!A1")
+        .option("useHeader", "true")
+        .mode("append")
+        .save(path + "hop_comparison.xlsx")
+      parsedHopsUnavailabvle.write
+        .format("com.crealytics.spark.excel")
+        .option("dataAddress", "'Unavailable Hop Prices'!A1")
+        .option("useHeader", "true")
+        .mode("append")
+        .save(path + "hop_comparison.xlsx")
+      unparsedHops.write
+        .format("com.crealytics.spark.excel")
+        .option("dataAddress", "'Unparsed Hops'!A1")
+        .option("useHeader", "true")
+        .mode("append")
+        .save(path + "hop_comparison.xlsx")
+      println("Success!")
+    } else {
+      println(raw"Unrecognized write format $format, writing parquet to: " + path + filename)
+      allHopsDF.write.mode("append").parquet(path+filename)
+      println("Success!")
+    }
   }
 }

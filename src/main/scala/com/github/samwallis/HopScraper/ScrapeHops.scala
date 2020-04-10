@@ -12,6 +12,10 @@ object ScrapeHops extends App with SparkSessionWrapper {
       case Nil => map
       case "-outdir" :: value :: tail =>
         nextOption(map ++ Map('outdir -> value.toString), tail)
+      case "-filename" :: value :: tail =>
+        nextOption(map ++ Map('filename -> value.toString), tail)
+      case "-writeformat" :: value :: tail =>
+        nextOption(map ++ Map('writeformat -> value.toString), tail)
       case option :: tail => {
         println("Unknown option " + option)
         System.exit(1)
@@ -22,6 +26,10 @@ object ScrapeHops extends App with SparkSessionWrapper {
   val options = nextOption(Map(), arglist)
   val outputPath: String =
     if (options.contains('outdir)) options('outdir).toString else "./"
+  val filename: String =
+    if (options.contains('filename)) options('filename).toString else "hop_prices"
+  val writeformat: String =
+    if (options.contains('writeformat)) options('writeformat).toString else "parquet"
 
   //get all product pages
   println("Getting all product page URLs...")
@@ -54,5 +62,5 @@ object ScrapeHops extends App with SparkSessionWrapper {
 
   println("Building output...")
   val writer = new OutputWriter(good_hops ++ bad_hops)
-  writer.write(outputPath)
+  writer.write(outputPath, filename, writeformat)
 }
