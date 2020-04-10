@@ -32,7 +32,7 @@ class OutputWriter(hops: Array[Hop]) extends SparkSessionWrapper {
       .format("com.crealytics.spark.excel")
       .option("dataAddress", "'Unparsed Hops'!A1")
       .option("useHeader", "true")
-      .mode("overwrite")
+      .mode("append")
       .save(path + "hop_comparison.xlsx")
     println("Success!")
   }
