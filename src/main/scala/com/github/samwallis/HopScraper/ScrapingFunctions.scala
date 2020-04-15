@@ -19,7 +19,8 @@ object ScrapingFunctions {
     var unseen_pages: Array[String] = Array(main_page)
     while (unseen_pages.length != 0) {
       val page = unseen_pages(0)
-      val page_connection: Connection = Jsoup.connect(page)
+      //println("Getting " + page)
+      val page_connection: Connection = Jsoup.connect(page).timeout(0)
       val page_num_elements: Elements =
         page_connection.get().body().select(".pagenumbering")
       val all_page_num_links: mutable.Buffer[String] =
@@ -38,7 +39,8 @@ object ScrapingFunctions {
 
   //get all product links from product page
   def getPageProductLinks(page: String, base_url: String): Array[String] = {
-    val page_connection: Connection = Jsoup.connect(page)
+    //println("Getting page " + page)
+    val page_connection: Connection = Jsoup.connect(page).timeout(0)
     val product_link_elements: Elements =
       page_connection.get().body().select(".col-xs-12 .row .text-center a")
     val all_product_urls: mutable.Buffer[String] =
@@ -62,7 +64,8 @@ object ScrapingFunctions {
 
   //get all the static elements from a hop page
   def getPreAjaxHopPage(url: String): Hop = {
-    val conn = Jsoup.connect(url)
+    //println("Getting page " + url)
+    val conn = Jsoup.connect(url).timeout(0)
     val hop_page = conn.get()
     val hop_title =
       hop_page.body().select("h1.title[itemprop=name]").first().text()
@@ -88,7 +91,7 @@ object ScrapingFunctions {
                   label: String,
                   xajax: String,
                   xajaxargs: String): (String, String, String) = {
-    val hop_page_connection: Connection = Jsoup.connect(url)
+    val hop_page_connection: Connection = Jsoup.connect(url).timeout(0)
     val hop_page_connection_with_params: Connection = hop_page_connection
       .data("xajax", xajax)
       .data("xajaxargs[]", xajaxargs)
